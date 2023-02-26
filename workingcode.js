@@ -1,74 +1,46 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, Alert, StyleSheet, StatusBar } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-
-const URL = 'http://localhost:3000/';
-
+// import styles from './styles';
 
 const Login = () => {
-const [username, setUsername] = useState('');
-const [password, setPassword] = useState('');
-const [isLogin, setIsLogin] = useState(true);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLogin, setIsLogin] = useState(true);
 
+  const customData = require('./db.json');
+  const navigation = useNavigation();
 
-const navigation = useNavigation();
-
-const handleLogin = async () => {
-  try {
-    const response = await fetch(URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ username, password })
-    });
-    const data = await response.json();
-    if (response.ok) {
-      console.log("User logged in:", data);
+  const handleLogin = async () => {
+    const user = customData.users.find(user => user.username === username.toLowerCase() && user.password === password);
+    if (user) {
+      console.log("User logged in:", user);
       // handle successful login, e.g. navigate to home screen
-      navigation.navigate('Home', { username: data.username });
+      navigation.navigate('Home', { username: user.username });
       setUsername('');
       setPassword('');
       setIsLogin(true);
       StatusBar.setHidden(true);
     } else {
-      console.error(data.message);
+      console.error("Invalid credentials");
       // handle failed login, e.g. display error message to user
     }
-  } catch (error) {
-    console.error(error);
-    // handle network error, e.g. display error message to user
-  }
-};
-
-
-const handleRegister = async () => {
-  try {
-    const response = await fetch(URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ username, password })
-    });
-    const data = await response.json();
-    if (response.ok) {
-      console.log("User registered:", data);
+  };
+  
+  const handleRegister = async () => {
+    const user = customData.users.find(user => user.username === username.toLowerCase());
+    if (user) {
+      console.error("User already exists");
+      Alert.alert("ERROR: User already exists. You have not registered.");
+      // handle failed registration, e.g. display error message to user
+    } else {
+      const newUser = { username, password };
+      customData.users.push(newUser);
+      console.log("User registered:", newUser);
       Alert.alert("You have successfully registered");
       // handle successful registration, e.g. display success message to user
-    } else {
-      console.error(data.message);
-      // handle failed registration, e.g. display error message to user
     }
-  } catch (error) {
-    console.error(error);
-    // handle network error, e.g. display error message to user
-  }
-};
-
-
-
-
+  };
 
   const styles = StyleSheet.create({
     container: {
